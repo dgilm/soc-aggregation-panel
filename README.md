@@ -3,6 +3,8 @@ soc-aggregation-panel
 
 An aggregation application for SOCs (Security Operation Center) management
 
+WARNING: This is just a proof of concept, not suitable for real use yet!
+
 # Requirements
 
 client:

@@ -1,0 +1,35 @@
+client:
+    id: "replace-with-client-identifier"
+    name: "replace-with-full-client-name"
+    url: "http://replace-with-client-ip-address"
+    geoip: 'replace-with-public-client-ip-address'
+
+queues:
+    - system
+    - inventory
+    - security
+    - vulnsummary
+    - vulnerability
+    - database
+    - alarm
+#    - geolocation
+
+rabbit:
+    host: 'replace-with-rabbitmq-server-ip-address'
+
+database:
+    ossim:
+        host: 'replace-with-ossim-database-ip-address'
+        user: 'root'
+        pass: ''
+        database: 'ossim'
+    snort:
+        host: 'replace-with-snort-ip-address'
+        user: 'root'
+        pass: ''
+        database: 'snort'
+
+ossim-server:
+    host: 'replace-with-ossim-ip-address'
+    port: 40001
+

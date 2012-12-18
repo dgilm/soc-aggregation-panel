@@ -1,0 +1,188 @@
+#!/usr/bin/env python
+
+import pika
+import simplejson as json
+import yaml
+import socket
+import sys
+import time
+
+sys.path.append('/usr/share/gis-client')
+from fabfile import *
+
+
+def get_cmd_options():
+    from optparse import OptionParser
+    parser = OptionParser()
+    parser.add_option("-c", "--config", dest="config", metavar="FILE")
+    (options, args) = parser.parse_args()
+    return options
+
+# parse command line arguments
+conf = 'client.yaml'
+cmd_options = get_cmd_options()
+if cmd_options.config:
+    conf = cmd_options.config
+config = yaml.load(open(conf))
+
+fab = Fab(config)
+
+QUEUES = config['queues']
+
+
+def clientInfo(client_id):
+    client_info = {
+        "client_id":   config['client']['id'],
+        "data": {
+            "client_name": config['client']['name'],
+            "client_url":  config['client']['url'],
+        }
+    }
+    yield json.dumps(client_info)
+
+
+def systemInfo(client_id):
+    system_info = {
+        "client_id": client_id,
+        "data": {
+            "hostname":       fab.hostname(),
+            "loadaverage":    fab.loadaverage(),
+            "distro":         fab.distro(),
+            "cpu_percent":    fab.cpupercent(),
+            "memory_percent": fab.memorypercent(),
+            "used_memory":    fab.usedmemory(),
+            "iface_recv":     fab.iface_recv(),
+            "iface_sent":     fab.iface_sent(),
+            "processes":      fab.processes(),
+        }
+    }
+    yield json.dumps(system_info)
+
+
+def alarmInfo(client_id):
+    for alarm in fab.alarms():
+        alarm_info = {
+            "client_id": client_id,
+            "data": alarm
+        }
+        yield json.dumps(alarm_info)
+
+
+def securityInfo(client_id):
+    security_info = {
+        "client_id": client_id,
+        "data": {
+            "num_alarms":            fab.count_alarms(),
+            "riskiest_alarm":        fab.riskiest_alarm(),
+            "compromised_host":      fab.compromised_host(),
+            "attacked_host":         fab.attacked_host(),
+            "most_repeated_alarm":   fab.most_repeated_alarm(),
+            "num_incidents":         fab.count_incidents(),
+            "num_connected_sensors": "%s of %s" \
+                % (fab.num_connected_sensors(), fab.num_sensors()),
+             "vulnerabilities":       fab.num_vulnerabilities()['total'],
+        }
+    }
+    yield json.dumps(security_info)
+
+
+def vulnsummaryInfo(client_id):
+    num_vulns = fab.num_vulnerabilities()
+    vulnsummary_info = {
+        "client_id": client_id,
+        "data": {
+            "num_vuln_total":   num_vulns["total"],
+            "num_vuln_serious": num_vulns["serious"],
+            "num_vuln_high":    num_vulns["high"],
+            "num_vuln_medium":  num_vulns["medium"],
+            "num_vuln_low":     num_vulns["low"],
+        }
+    }
+    yield json.dumps(vulnsummary_info)
+
+
+def vulnerabilityInfo(client_id):
+    for vulnerability in fab.vulnerabilities():
+        vulnerability_info = {
+            "client_id": client_id,
+            "data": vulnerability
+        }
+        yield json.dumps(vulnerability_info)
+
+
+def databaseInfo(client_id):
+    database_info = {
+        "client_id": client_id,
+        "data": {
+            "num_siem_events":    fab.count_siem_events(),
+            "num_backlog_events": fab.count_backlog_events(),
+            "ossim_size":         fab.db_size("ossim"),
+            "snort_size":         fab.db_size("snort"),
+            "osvdb_size":         fab.db_size("osvdb"),
+        }
+    }
+    yield json.dumps(database_info)
+
+
+def inventoryInfo(client_id):
+    inventory_info = {
+        "client_id": client_id,
+        "data": {
+            "kernel":               fab.kernel(),
+            "ip":                   fab.ip(),
+            "ossim_server_version": fab.ossim_server_version(),
+            "pkg_inst":             fab.count_inst_pkg(),
+            "model_name":           fab.model_name(),
+            "num_cores":            fab.num_cores(),
+        }
+    }
+    yield json.dumps(inventory_info)
+
+
+def geolocationInfo(client_id):
+    geolocation_info = {
+        "client_id": client_id,
+        "data": fab.geolocation()
+    }
+    yield json.dumps(geolocation_info)
+
+
+def publish_queue_info(channel, queue):
+
+    print " [->] Sending '" + queue + "' Information",
+
+    try:
+        channel.queue_declare(queue=queue)
+    except Exception, e:
+        print e
+        sys.exit()
+
+    iterator = eval(queue + "Info(config['client']['id'])")
+    i = 0
+    for body_info in iterator:
+        i += 1
+        channel.basic_publish(exchange='',
+                              routing_key=queue,
+                              body=body_info)
+    print " (%d)" % (i)
+
+try:
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(host=config['rabbit']['host']))
+    channel = connection.channel()
+except socket.error, e:
+    print " [!!] Error connecting to rabbitmq: " + str(e)
+    sys.exit()
+
+try:
+    while(1):
+
+        # Special queue for client information
+        publish_queue_info(channel, "client")
+
+        for q in QUEUES:
+            publish_queue_info(channel, q)
+#            Thread(target=publish_queue_info, args=(channel, q)).start()
+        time.sleep(300)
+except KeyboardInterrupt:
+    connection.close()

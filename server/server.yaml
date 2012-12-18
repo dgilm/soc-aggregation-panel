@@ -1,0 +1,16 @@
+rabbit:
+    host: 'localhost'
+
+mongo:
+    database: 'horca'
+
+queues:
+    - client
+    - system
+    - alarm
+    - security
+    - vulnsummary
+    - vulnerability
+    - database
+    - inventory
+    - geolocation
