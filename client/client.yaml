@@ -19,17 +19,17 @@ rabbit:
 
 database:
     ossim:
-        host: 'replace-with-ossim-database-ip-address'
+        host: 'localhost'
         user: 'root'
         pass: ''
-        database: 'ossim'
+        database: 'alienvault'
     snort:
-        host: 'replace-with-snort-ip-address'
+        host: 'localhost'
         user: 'root'
         pass: ''
-        database: 'snort'
+        database: 'alienvault_siem'
 
 ossim-server:
-    host: 'replace-with-ossim-ip-address'
+    host: '127.0.0.1'
     port: 40001
 

@@ -116,8 +116,8 @@ def databaseInfo(client_id):
         "data": {
             "num_siem_events":    fab.count_siem_events(),
             "num_backlog_events": fab.count_backlog_events(),
-            "ossim_size":         fab.db_size("ossim"),
-            "snort_size":         fab.db_size("snort"),
+            "ossim_size":         fab.db_size("alienvault"),
+            "snort_size":         fab.db_size("alienvault_siem"),
             "osvdb_size":         fab.db_size("osvdb"),
         }
     }

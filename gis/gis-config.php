@@ -179,7 +179,7 @@ $COLLECTION_MAP = array
             "descr"     => "",
             "threshold_warning"  => "50000",
             "threshold_critical" => "100000",
-            "url"                => "{client_url}/ossim/control_panel/backlog.php",
+            "url"                => "{client_url}/ossim/alarm/backlog.php",
         ),
         "ossim_size" => array (
             "index"     => "ossim_size",
@@ -223,7 +223,7 @@ $COLLECTION_MAP = array
             "index"     => "alarm",
             "title"     => "Alarm",
             "descr"     => "",
-            "url"       => "{client_url}/ossim/control_panel/alarm_console.php?query={body_text}",
+            "url"       => "{client_url}/ossim/alarm/alarm_console.php?query={body_text}",
         ),
         "risk" => array (
             "index"     => "risk",
@@ -237,13 +237,13 @@ $COLLECTION_MAP = array
             "index"     => "source",
             "title"     => "Src",
             "descr"     => "",
-            "url"       => "{client_url}/ossim/control_panel/alarm_console.php?src_ip={body_text}",
+            "url"       => "{client_url}/ossim/alarm/alarm_console.php?src_ip={body_text}",
         ),
         "destination" => array (
             "index"     => "destination",
             "title"     => "Dst",
             "descr"     => "",
-            "url"       => "{client_url}/ossim/control_panel/alarm_console.php?dst_ip={body_text}",
+            "url"       => "{client_url}/ossim/alarm/alarm_console.php?dst_ip={body_text}",
         )
     ),
 
